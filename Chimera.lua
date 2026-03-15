@@ -1,6 +1,6 @@
 -- =====================================================
--- PROJECT CHIMERA - PERFECTED EDITION
--- For Solara Executor - EVERYTHING FIXED
+-- PROJECT CHIMERA - ULTIMATE PERFORMANCE EDITION
+-- For Solara Executor - AIMBOT FIXED + FLY OVERHAULED
 -- =====================================================
 
 -- Wait for game to load
@@ -20,7 +20,7 @@ local Mouse = LocalPlayer:GetMouse()
 -- =====================================================
 local GUI = nil
 local GUIEnabled = false
-local ToggleKey = Enum.KeyCode.RightControl -- Default toggle key
+local ToggleKey = Enum.KeyCode.RightControl
 
 local function CreateGUI()
     if GUI then
@@ -56,7 +56,7 @@ local function CreateGUI()
     TitleText.Size = UDim2.new(1, -70, 1, 0)
     TitleText.Position = UDim2.new(0, 10, 0, 0)
     TitleText.BackgroundTransparency = 1
-    TitleText.Text = "🔥 PROJECT CHIMERA - PERFECTED"
+    TitleText.Text = "🔥 PROJECT CHIMERA - ULTIMATE"
     TitleText.TextColor3 = Color3.fromRGB(255, 100, 100)
     TitleText.TextXAlignment = Enum.TextXAlignment.Left
     TitleText.Font = Enum.Font.GothamBold
@@ -159,13 +159,15 @@ local function CreateGUI()
     local Config = {
         Aimbot = {
             Enabled = false,
-            Key = "E", -- Can be "E" or "MouseButton1" or "MouseButton2"
+            Key = "E",
             Smoothness = 0.3,
             FOV = 150,
             VisibleCheck = true,
             TeamCheck = true,
             HitPart = "Head",
             Prediction = 0.15,
+            AimAssist = true, -- New: subtle aim assist
+            AutoShoot = false, -- New: auto fire when on target
         },
         ESP = {
             Enabled = true,
@@ -186,6 +188,7 @@ local function CreateGUI()
         Movement = {
             FlyEnabled = false,
             FlySpeed = 50,
+            FlyAcceleration = 10, -- New: smooth acceleration
             FlyKey = "Space",
             NoClip = false,
         }
@@ -401,7 +404,7 @@ local function CreateGUI()
         return yPos + 50
     end
 
-    -- KEYBIND PICKER that supports BOTH keyboard and mouse
+    -- KEYBIND PICKER
     local function CreateKeybind(parent, text, yPos, default, callback)
         local keybindFrame = Instance.new("Frame")
         keybindFrame.Size = UDim2.new(1, -20, 0, 50)
@@ -436,7 +439,6 @@ local function CreateGUI()
             keyButton.Text = "Press any key/mouse..."
         end)
 
-        -- Listen for BOTH keyboard and mouse inputs
         local inputConnection
         inputConnection = UserInputService.InputBegan:Connect(function(input)
             if listening then
@@ -452,7 +454,7 @@ local function CreateGUI()
                 elseif input.UserInputType == Enum.UserInputType.MouseButton3 then
                     keyName = "MouseButton3"
                 else
-                    return -- Ignore other input types
+                    return
                 end
                 
                 keyButton.Text = keyName
@@ -468,7 +470,7 @@ local function CreateGUI()
     end
 
     -- =====================================================
-    -- POPULATE AIMBOT TAB
+    -- POPULATE AIMBOT TAB (WITH NEW OPTIONS)
     -- =====================================================
     local yPos = 10
     yPos = CreateSection(TabFrames[1], "Aimbot Settings", yPos)
@@ -480,6 +482,8 @@ local function CreateGUI()
     yPos = CreateToggle(TabFrames[1], "Team Check", yPos, Config.Aimbot.TeamCheck, function(v) Config.Aimbot.TeamCheck = v end)
     yPos = CreateDropdown(TabFrames[1], "Hit Part", yPos, {"Head", "HumanoidRootPart", "Torso", "UpperTorso"}, Config.Aimbot.HitPart, function(v) Config.Aimbot.HitPart = v end)
     yPos = CreateSlider(TabFrames[1], "Prediction", yPos, Config.Aimbot.Prediction, 0, 0.5, function(v) Config.Aimbot.Prediction = v end)
+    yPos = CreateToggle(TabFrames[1], "Aim Assist (Subtle)", yPos, Config.Aimbot.AimAssist, function(v) Config.Aimbot.AimAssist = v end)
+    yPos = CreateToggle(TabFrames[1], "Auto Shoot", yPos, Config.Aimbot.AutoShoot, function(v) Config.Aimbot.AutoShoot = v end)
 
     -- =====================================================
     -- POPULATE ESP TAB
@@ -503,10 +507,10 @@ local function CreateGUI()
     yPos = CreateToggle(TabFrames[3], "Custom Crosshair", yPos, Config.Visuals.Crosshair, function(v) Config.Visuals.Crosshair = v end)
 
     -- =====================================================
-    -- POPULATE MOVEMENT TAB (FLY FEATURE)
+    -- POPULATE MOVEMENT TAB (OVERHAULED FLY)
     -- =====================================================
     yPos = 10
-    yPos = CreateSection(TabFrames[4], "Flight System", yPos)
+    yPos = CreateSection(TabFrames[4], "Flight System - OVERHAULED", yPos)
     yPos = CreateToggle(TabFrames[4], "Enable Fly", yPos, Config.Movement.FlyEnabled, function(v) 
         Config.Movement.FlyEnabled = v 
         if v then
@@ -516,21 +520,19 @@ local function CreateGUI()
         end
     end)
     yPos = CreateSlider(TabFrames[4], "Fly Speed", yPos, Config.Movement.FlySpeed, 10, 200, function(v) Config.Movement.FlySpeed = v end)
+    yPos = CreateSlider(TabFrames[4], "Acceleration", yPos, Config.Movement.FlyAcceleration, 5, 30, function(v) Config.Movement.FlyAcceleration = v end)
     yPos = CreateKeybind(TabFrames[4], "Fly Key", yPos, Config.Movement.FlyKey, function(v) Config.Movement.FlyKey = v end)
-    yPos = CreateToggle(TabFrames[4], "No Clip (Optional)", yPos, Config.Movement.NoClip, function(v) Config.Movement.NoClip = v end)
+    yPos = CreateToggle(TabFrames[4], "No Clip", yPos, Config.Movement.NoClip, function(v) Config.Movement.NoClip = v end)
 
     -- =====================================================
     -- POPULATE SETTINGS TAB
     -- =====================================================
     yPos = 10
     yPos = CreateSection(TabFrames[5], "GUI Settings", yPos)
-    
-    -- Toggle GUI Key
     yPos = CreateKeybind(TabFrames[5], "Toggle GUI Key", yPos, "RightControl", function(v)
         ToggleKey = Enum.KeyCode[v] or Enum.KeyCode.RightControl
     end)
     
-    -- Reopen GUI button (in case it's closed)
     local reopenFrame = Instance.new("Frame")
     reopenFrame.Size = UDim2.new(1, -20, 0, 50)
     reopenFrame.Position = UDim2.new(0, 10, 0, yPos)
@@ -554,13 +556,14 @@ local function CreateGUI()
     end)
 
     -- =====================================================
-    -- FLY SYSTEM
+    -- OVERHAULED FLY SYSTEM - SMOOTH AND RESPONSIVE
     -- =====================================================
     local flying = false
     local flyConnection = nil
     local noclipConnection = nil
     local flyBodyVelocity = nil
     local flyBodyGyro = nil
+    local currentVelocity = Vector3.new(0, 0, 0)
 
     function StartFly()
         local character = LocalPlayer.Character
@@ -572,21 +575,29 @@ local function CreateGUI()
         if not humanoid or not rootPart then return end
         
         flying = true
+        currentVelocity = Vector3.new(0, 0, 0)
         
+        -- BodyVelocity for movement
         flyBodyVelocity = Instance.new("BodyVelocity")
         flyBodyVelocity.Velocity = Vector3.new(0, 0, 0)
         flyBodyVelocity.MaxForce = Vector3.new(4000, 4000, 4000)
+        flyBodyVelocity.P = 1250 -- Higher P for more responsive
         flyBodyVelocity.Parent = rootPart
         
+        -- BodyGyro for orientation
         flyBodyGyro = Instance.new("BodyGyro")
         flyBodyGyro.MaxTorque = Vector3.new(4000, 4000, 4000)
         flyBodyGyro.P = 1000
         flyBodyGyro.D = 50
         flyBodyGyro.Parent = rootPart
         
+        -- Disable default physics
         humanoid.PlatformStand = true
+        rootPart.Velocity = Vector3.new(0, 0, 0)
+        rootPart.RotVelocity = Vector3.new(0, 0, 0)
         
-        flyConnection = RunService.Heartbeat:Connect(function()
+        -- Main fly loop with smooth acceleration
+        flyConnection = RunService.Heartbeat:Connect(function(deltaTime)
             if not flying or not Config.Movement.FlyEnabled then
                 StopFly()
                 return
@@ -597,53 +608,65 @@ local function CreateGUI()
                 return
             end
             
-            local moveDirection = Vector3.new(0, 0, 0)
+            -- Calculate target velocity based on input
+            local targetVelocity = Vector3.new(0, 0, 0)
             local cameraCFrame = Camera.CFrame
             
+            -- Forward/Backward (WASD)
             if UserInputService:IsKeyDown(Enum.KeyCode.W) then
-                moveDirection = moveDirection + cameraCFrame.LookVector
+                targetVelocity = targetVelocity + cameraCFrame.LookVector * Config.Movement.FlySpeed
             end
             if UserInputService:IsKeyDown(Enum.KeyCode.S) then
-                moveDirection = moveDirection - cameraCFrame.LookVector
+                targetVelocity = targetVelocity - cameraCFrame.LookVector * Config.Movement.FlySpeed
             end
+            
+            -- Strafe (A/D)
             if UserInputService:IsKeyDown(Enum.KeyCode.A) then
-                moveDirection = moveDirection - cameraCFrame.RightVector
+                targetVelocity = targetVelocity - cameraCFrame.RightVector * Config.Movement.FlySpeed
             end
             if UserInputService:IsKeyDown(Enum.KeyCode.D) then
-                moveDirection = moveDirection + cameraCFrame.RightVector
+                targetVelocity = targetVelocity + cameraCFrame.RightVector * Config.Movement.FlySpeed
             end
             
+            -- Vertical (Space/Ctrl)
             if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
-                moveDirection = moveDirection + Vector3.new(0, 1, 0)
+                targetVelocity = targetVelocity + Vector3.new(0, Config.Movement.FlySpeed, 0)
             end
-            if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
-                moveDirection = moveDirection - Vector3.new(0, 1, 0)
-            end
-            
-            if moveDirection.Magnitude > 0 then
-                moveDirection = moveDirection.Unit * Config.Movement.FlySpeed
+            if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.C) then
+                targetVelocity = targetVelocity - Vector3.new(0, Config.Movement.FlySpeed, 0)
             end
             
+            -- Smooth acceleration
+            if targetVelocity.Magnitude > 0 then
+                targetVelocity = targetVelocity.Unit * Config.Movement.FlySpeed
+                -- Smoothly interpolate current velocity to target
+                currentVelocity = currentVelocity:Lerp(targetVelocity, Config.Movement.FlyAcceleration * deltaTime)
+            else
+                -- Decelerate when no input
+                currentVelocity = currentVelocity:Lerp(Vector3.new(0, 0, 0), Config.Movement.FlyAcceleration * deltaTime * 2)
+            end
+            
+            -- Apply velocity
             if flyBodyVelocity then
-                flyBodyVelocity.Velocity = moveDirection
+                flyBodyVelocity.Velocity = currentVelocity
             end
             
+            -- Keep orientation aligned with camera
             if flyBodyGyro then
                 flyBodyGyro.CFrame = cameraCFrame
             end
-        end)
-        
-        if Config.Movement.NoClip then
-            noclipConnection = RunService.Stepped:Connect(function()
-                if character then
-                    for _, part in pairs(character:GetDescendants()) do
-                        if part:IsA("BasePart") then
-                            part.CanCollide = false
-                        end
+            
+            -- NoClip
+            if Config.Movement.NoClip then
+                for _, part in pairs(character:GetDescendants()) do
+                    if part:IsA("BasePart") and part ~= rootPart then
+                        part.CanCollide = false
                     end
                 end
-            end)
-        end
+                -- Keep rootpart can-collide true to prevent falling through world
+                rootPart.CanCollide = true
+            end
+        end)
     end
 
     function StopFly()
@@ -675,11 +698,18 @@ local function CreateGUI()
             if humanoid then
                 humanoid.PlatformStand = false
             end
+            
+            -- Restore collision
+            for _, part in pairs(character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = true
+                end
+            end
         end
     end
 
     -- =====================================================
-    -- CORE ENGINE
+    -- CORE ENGINE (ESP + AIMBOT)
     -- =====================================================
 
     -- Check Drawing support
@@ -750,18 +780,16 @@ local function CreateGUI()
         return hit and hit:IsDescendantOf(targetPart.Parent) or false
     end
 
-    -- Check if a key is pressed (works for BOTH keyboard and mouse)
+    -- Check if a key is pressed
     local function IsKeyPressed(keyName)
         if not keyName then return false end
         
-        -- Check keyboard keys
         for _, enum in pairs(Enum.KeyCode:GetEnumItems()) do
             if enum.Name == keyName then
                 return UserInputService:IsKeyDown(enum)
             end
         end
         
-        -- Check mouse buttons
         if keyName == "MouseButton1" then
             return UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1)
         elseif keyName == "MouseButton2" then
@@ -773,8 +801,12 @@ local function CreateGUI()
         return false
     end
 
+    -- IMPROVED AIMBOT TARGET SELECTION
     local function GetClosestTarget()
-        local closest, closestDist = nil, Config.Aimbot.FOV
+        local closest = nil
+        local closestDist = Config.Aimbot.FOV
+        local closestScreenDist = Config.Aimbot.FOV * 10
+        
         local localChar = LocalPlayer.Character
         if not localChar then return nil end
         
@@ -789,20 +821,26 @@ local function CreateGUI()
                 
                 local targetPart = player.Character:FindFirstChild(Config.Aimbot.HitPart) or player.Character:FindFirstChild("HumanoidRootPart")
                 if targetPart then
+                    -- Check distance
                     local dist = (targetPart.Position - localRoot.Position).Magnitude
-                    if dist < Config.Aimbot.FOV then
+                    if dist <= Config.Aimbot.FOV then
+                        -- Check visibility
                         if Config.Aimbot.VisibleCheck then
                             if not IsVisible(localRoot.Position, targetPart) then
                                 continue
                             end
                         end
                         
-                        local screenPos = Camera:WorldToViewportPoint(targetPart.Position)
-                        local screenDist = (Vector2.new(screenPos.X, screenPos.Y) - (Camera.ViewportSize/2)).Magnitude
-                        
-                        if screenDist < closestDist then
-                            closestDist = screenDist
-                            closest = player
+                        -- Get screen position
+                        local screenPos, onScreen = Camera:WorldToViewportPoint(targetPart.Position)
+                        if onScreen then
+                            local screenDist = (Vector2.new(screenPos.X, screenPos.Y) - (Camera.ViewportSize/2)).Magnitude
+                            local combinedScore = dist * 0.3 + screenDist * 0.7 -- Weighted score
+                            
+                            if combinedScore < closestDist then
+                                closestDist = combinedScore
+                                closest = player
+                            end
                         end
                     end
                 end
@@ -971,7 +1009,7 @@ local function CreateGUI()
             end
         end
         
-        -- AIMBOT - Now works with BOTH keyboard and mouse
+        -- IMPROVED AIMBOT LOGIC
         if Config.Aimbot.Enabled and IsKeyPressed(Config.Aimbot.Key) then
             local target = GetClosestTarget()
             if target and target.Character then
@@ -987,10 +1025,27 @@ local function CreateGUI()
                     local screenPos = Camera:WorldToViewportPoint(targetPos)
                     local currentPos = Vector2.new(Mouse.X, Mouse.Y)
                     local delta = Vector2.new(screenPos.X, screenPos.Y) - currentPos
+                    
+                    -- Apply smoothness
                     local moveDelta = delta * (1 - Config.Aimbot.Smoothness)
+                    
+                    -- Apply aim assist (even smoother movement when near target)
+                    if Config.Aimbot.AimAssist and delta.Magnitude < 50 then
+                        moveDelta = delta * 0.5 -- Extra smoothing when close
+                    end
                     
                     if mousemoverel then
                         mousemoverel(moveDelta.X, moveDelta.Y)
+                    end
+                    
+                    -- Auto shoot
+                    if Config.Aimbot.AutoShoot and delta.Magnitude < 20 then
+                        -- Simulate click (executor may need different method)
+                        if mouse1press then
+                            mouse1press()
+                            task.wait(0.05)
+                            mouse1release()
+                        end
                     end
                 end
             end
@@ -1006,13 +1061,11 @@ local function CreateGUI()
 end
 
 -- =====================================================
--- GUI TOGGLE SYSTEM - Press RightControl to show/hide
+-- GUI TOGGLE SYSTEM
 -- =====================================================
 
--- Create GUI initially
 CreateGUI()
 
--- Listen for toggle key
 UserInputService.InputBegan:Connect(function(input)
     if input.KeyCode == ToggleKey then
         if GUI then
@@ -1031,9 +1084,9 @@ end)
 
 -- Notification
 game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "Project Chimera",
-    Text = "Press RightControl to toggle GUI | Mouse+Keyboard aimbot",
+    Title = "Project Chimera ULTIMATE",
+    Text = "Aimbot FIXED | Fly OVERHAULED | Press RightControl",
     Duration = 5
 })
 
-print("[+] Project Chimera PERFECTED - Tabs fixed, Mouse aimbot works, GUI togglable")
+print("[+] Project Chimera ULTIMATE - Aimbot fixed, Fly overhauled")
